@@ -21,7 +21,7 @@ paths:
           name: page
           schema: { type: integer, minimum: 1, default: 1 }
       responses:
-        '200': { description: Colección paginada }
+        '200': { $ref: '#/components/responses/CollectionSuccess' }
     post:
       tags: [Platillos]
       summary: Crear platillo
@@ -32,7 +32,7 @@ paths:
             schema: { $ref: '#/components/schemas/MenuItemInput' }
             example: { name: Salmón al limón, description: Salmón a la plancha con vegetales., price: '15.50', category: platos-fuertes, is_available: true }
       responses:
-        '201': { description: Platillo creado }
+        '201': { $ref: '#/components/responses/MenuItemSuccess' }
         '422': { $ref: '#/components/responses/ValidationError' }
   /menu-items/category/{category}:
     get:
@@ -44,7 +44,7 @@ paths:
           required: true
           schema: { type: string, enum: [entradas, platos-fuertes, ensaladas, postres, bebidas] }
       responses:
-        '200': { description: Colección paginada de la categoría }
+        '200': { $ref: '#/components/responses/CollectionSuccess' }
         '422': { description: Categoría no reconocida }
   /menu-items/{id}:
     parameters:
@@ -56,7 +56,7 @@ paths:
       tags: [Platillos]
       summary: Consultar un platillo
       responses:
-        '200': { description: Platillo encontrado }
+        '200': { $ref: '#/components/responses/MenuItemSuccess' }
         '404': { $ref: '#/components/responses/NotFound' }
     put:
       tags: [Platillos]
@@ -67,7 +67,7 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/MenuItemInput' }
       responses:
-        '200': { description: Platillo actualizado }
+        '200': { $ref: '#/components/responses/MenuItemSuccess' }
         '404': { $ref: '#/components/responses/NotFound' }
         '422': { $ref: '#/components/responses/ValidationError' }
     patch:
@@ -77,12 +77,9 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              allOf:
-                - $ref: '#/components/schemas/MenuItemInput'
-              minProperties: 1
+            schema: { $ref: '#/components/schemas/MenuItemPatch' }
       responses:
-        '200': { description: Platillo actualizado }
+        '200': { $ref: '#/components/responses/MenuItemSuccess' }
         '404': { $ref: '#/components/responses/NotFound' }
         '422': { $ref: '#/components/responses/ValidationError' }
     delete:
@@ -99,7 +96,7 @@ components:
       properties:
         name: { type: string, maxLength: 120 }
         description: { type: string, maxLength: 2000 }
-        price: { type: string, pattern: '^\d+(\.\d{1,2})?$', example: '15.50', description: Precio USD no negativo, hasta dos decimales }
+        price: { type: string, pattern: '^\d+(\.\d{1,2})?$', example: '15.50', description: 'Precio USD no negativo, hasta dos decimales' }
         category: { type: string, enum: [entradas, platos-fuertes, ensaladas, postres, bebidas] }
         is_available: { type: boolean }
     MenuItem:
@@ -110,7 +107,36 @@ components:
             id: { type: integer }
             created_at: { type: string, format: date-time }
             updated_at: { type: string, format: date-time }
+    MenuItemPatch:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, maxLength: 120 }
+        description: { type: string, maxLength: 2000 }
+        price: { type: string, pattern: '^\d+(\.\d{1,2})?$', example: '15.50' }
+        category: { type: string, enum: [entradas, platos-fuertes, ensaladas, postres, bebidas] }
+        is_available: { type: boolean }
   responses:
+    MenuItemSuccess:
+      description: Platillo encontrado, creado o actualizado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data: { $ref: '#/components/schemas/MenuItem' }
+    CollectionSuccess:
+      description: Colección paginada de platillos
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items: { $ref: '#/components/schemas/MenuItem' }
+              links: { type: object, additionalProperties: { type: [string, 'null'] } }
+              meta: { type: object, description: Metadatos de paginación de Laravel }
     NotFound:
       description: Elemento inexistente
       content:

@@ -46,6 +46,7 @@ DB_PORT=3306
 DB_DATABASE=la_buena_mesa_api
 DB_USERNAME=root
 DB_PASSWORD=
+CORS_ALLOWED_ORIGINS=http://127.0.0.1:8012
 ```
 
 Usa las credenciales locales de tu equipo; no las añadas a Git. Luego:
@@ -156,7 +157,7 @@ Las pruebas de integración usan SQLite en memoria y cubren listado vacío/pagin
 
 ## Seguridad
 
-`.env` y credenciales locales están excluidos de Git; `.env.example` contiene valores de ejemplo sin secretos. Laravel valida los datos, limita atributos de asignación masiva y no expone trazas mediante el formato JSON de la API. Esta API es una demostración académica local: antes de producción, añade autenticación/autorización a las operaciones de escritura, configura HTTPS, `APP_DEBUG=false`, restricciones CORS y límites de solicitudes acordes al despliegue. No expongas el servidor local a Internet.
+`.env` y credenciales locales están excluidos de Git; `.env.example` contiene valores de ejemplo sin secretos. Laravel valida los datos, limita atributos de asignación masiva, restringe CORS al origen configurado en `CORS_ALLOWED_ORIGINS` y usa `APP_DEBUG=false` para no devolver trazas en respuestas de error. Esta API es una demostración académica local: antes de producción, añade autenticación/autorización a las operaciones de escritura, configura HTTPS y límites de solicitudes acordes al despliegue. No expongas el servidor local a Internet.
 
 ## Autoría
 
