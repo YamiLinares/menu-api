@@ -1,0 +1,23 @@
+{
+  "info": {
+    "_postman_id": "1c6597d1-3f35-4cc7-a00e-8549dbdf00e1",
+    "name": "La Buena Mesa — API del menú",
+    "description": "CRUD del menú. Selecciona variables base_url e item_id; las solicitudes Postman almacenan el id creado/consultado automáticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8012/api" },
+    { "key": "item_id", "value": "1" }
+  ],
+  "item": [
+    { "name": "Listar platillos", "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }], "url": "{{base_url}}/menu-items?per_page=12" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('HTTP 200', () => pm.response.to.have.status(200));", "pm.test('Devuelve colección paginada', () => pm.expect(pm.response.json()).to.have.property('data'));", "if (pm.response.json().data.length) pm.collectionVariables.set('item_id', pm.response.json().data[0].id);"] } }] },
+    { "name": "Consultar platillo", "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }], "url": "{{base_url}}/menu-items/{{item_id}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('HTTP 200', () => pm.response.to.have.status(200));"] } }] },
+    { "name": "Crear platillo", "request": { "method": "POST", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Sopa de prueba\",\n  \"description\": \"Caldo de temporada para pruebas.\",\n  \"price\": \"8.50\",\n  \"category\": \"entradas\",\n  \"is_available\": true\n}" }, "url": "{{base_url}}/menu-items" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('HTTP 201', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('item_id', pm.response.json().data.id);"] } }] },
+    { "name": "Actualizar completo (PUT)", "request": { "method": "PUT", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Sopa de temporada\",\n  \"description\": \"Caldo artesanal con verduras.\",\n  \"price\": \"9.25\",\n  \"category\": \"entradas\",\n  \"is_available\": true\n}" }, "url": "{{base_url}}/menu-items/{{item_id}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('HTTP 200', () => pm.response.to.have.status(200));"] } }] },
+    { "name": "Actualizar precio y disponibilidad (PATCH)", "request": { "method": "PATCH", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"price\": \"10.00\",\n  \"is_available\": false\n}" }, "url": "{{base_url}}/menu-items/{{item_id}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('HTTP 200', () => pm.response.to.have.status(200));"] } }] },
+    { "name": "Filtrar entradas", "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }], "url": "{{base_url}}/menu-items/category/entradas" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('HTTP 200 y todos son entradas', () => { pm.response.to.have.status(200); pm.response.json().data.forEach(item => pm.expect(item.category).to.eql('entradas')); });"] } }] },
+    { "name": "Validación (422)", "request": { "method": "POST", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"\",\n  \"description\": \"\",\n  \"price\": -2,\n  \"category\": \"otra\",\n  \"is_available\": \"quizá\"\n}" }, "url": "{{base_url}}/menu-items" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('HTTP 422 con errores por campo', () => { pm.response.to.have.status(422); pm.expect(pm.response.json()).to.have.property('errors'); });"] } }] },
+    { "name": "Identificador inexistente (404)", "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }], "url": "{{base_url}}/menu-items/99999999" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('HTTP 404', () => pm.response.to.have.status(404));"] } }] },
+    { "name": "Eliminar platillo", "request": { "method": "DELETE", "header": [{ "key": "Accept", "value": "application/json" }], "url": "{{base_url}}/menu-items/{{item_id}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('HTTP 204', () => pm.response.to.have.status(204));"] } }] }
+  ]
+}

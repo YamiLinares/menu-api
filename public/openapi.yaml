@@ -1,0 +1,123 @@
+openapi: 3.1.0
+info:
+  title: La Buena Mesa — API del menú
+  version: 1.0.0
+  description: API REST para consultar y administrar los platillos del restaurante La Buena Mesa. Precios expresados en USD. Antes de producción, protege los endpoints de escritura con autenticación.
+servers:
+  - url: /api
+    description: Servidor local
+tags:
+  - name: Platillos
+paths:
+  /menu-items:
+    get:
+      tags: [Platillos]
+      summary: Listar platillos
+      parameters:
+        - in: query
+          name: per_page
+          schema: { type: integer, minimum: 1, maximum: 100, default: 12 }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+      responses:
+        '200': { description: Colección paginada }
+    post:
+      tags: [Platillos]
+      summary: Crear platillo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MenuItemInput' }
+            example: { name: Salmón al limón, description: Salmón a la plancha con vegetales., price: '15.50', category: platos-fuertes, is_available: true }
+      responses:
+        '201': { description: Platillo creado }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /menu-items/category/{category}:
+    get:
+      tags: [Platillos]
+      summary: Filtrar por categoría
+      parameters:
+        - in: path
+          name: category
+          required: true
+          schema: { type: string, enum: [entradas, platos-fuertes, ensaladas, postres, bebidas] }
+      responses:
+        '200': { description: Colección paginada de la categoría }
+        '422': { description: Categoría no reconocida }
+  /menu-items/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer, minimum: 1 }
+    get:
+      tags: [Platillos]
+      summary: Consultar un platillo
+      responses:
+        '200': { description: Platillo encontrado }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Platillos]
+      summary: Reemplazar un platillo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MenuItemInput' }
+      responses:
+        '200': { description: Platillo actualizado }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    patch:
+      tags: [Platillos]
+      summary: Actualizar parcialmente un platillo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/MenuItemInput'
+              minProperties: 1
+      responses:
+        '200': { description: Platillo actualizado }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Platillos]
+      summary: Eliminar un platillo
+      responses:
+        '204': { description: Eliminado sin contenido }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  schemas:
+    MenuItemInput:
+      type: object
+      required: [name, description, price, category, is_available]
+      properties:
+        name: { type: string, maxLength: 120 }
+        description: { type: string, maxLength: 2000 }
+        price: { type: string, pattern: '^\d+(\.\d{1,2})?$', example: '15.50', description: Precio USD no negativo, hasta dos decimales }
+        category: { type: string, enum: [entradas, platos-fuertes, ensaladas, postres, bebidas] }
+        is_available: { type: boolean }
+    MenuItem:
+      allOf:
+        - $ref: '#/components/schemas/MenuItemInput'
+        - type: object
+          properties:
+            id: { type: integer }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+  responses:
+    NotFound:
+      description: Elemento inexistente
+      content:
+        application/json:
+          example: { message: El elemento del menú no existe. }
+    ValidationError:
+      description: Error de validación
+      content:
+        application/json:
+          example: { message: Los datos proporcionados no son válidos., errors: { price: [El precio debe ser mayor o igual a cero.] } }

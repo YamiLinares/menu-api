@@ -3,6 +3,8 @@
 .env
 .env.backup
 .env.production
+.env.testing
+.env.*.local
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -21,8 +23,12 @@
 /storage/mysql.pid
 /storage/mysql.err
 /storage/mysql.log
+/storage/mysql.stdout.log
 /storage/pail
 /vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
+*.sql
+*.dump
+*.bak
